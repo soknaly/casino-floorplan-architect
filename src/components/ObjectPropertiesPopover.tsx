@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { GameObject } from '@/types/floor-plan';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { RotateCw, Trash2, Settings } from 'lucide-react';
+import { Settings, RotateCw, Trash2 } from 'lucide-react';
+import { GameObject } from '@/types/floor-plan';
 import { toast } from 'sonner';
 
 interface ObjectPropertiesPopoverProps {
@@ -23,35 +23,30 @@ export const ObjectPropertiesPopover: React.FC<ObjectPropertiesPopoverProps> = (
   isOpen,
   onOpenChange
 }) => {
-  const [formData, setFormData] = useState({
-    name: object.name,
-    x: object.x.toString(),
-    y: object.y.toString(),
-    width: object.width.toString(),
-    height: object.height.toString(),
-  });
+  const [name, setName] = useState(object.name);
+  const [x, setX] = useState(object.x);
+  const [y, setY] = useState(object.y);
+  const [width, setWidth] = useState(object.width);
+  const [height, setHeight] = useState(object.height);
 
   const handleSave = () => {
-    const updates: Partial<GameObject> = {
-      name: formData.name,
-      x: parseFloat(formData.x) || 0,
-      y: parseFloat(formData.y) || 0,
-      width: parseFloat(formData.width) || 50,
-      height: parseFloat(formData.height) || 50,
-    };
-    
-    onUpdate(updates);
+    onUpdate({
+      name,
+      x: Number(x),
+      y: Number(y),
+      width: Number(width),
+      height: Number(height)
+    });
     onOpenChange(false);
     toast.success('Object properties updated');
   };
 
   const handleRotate = () => {
-    const newRotation = (object.rotation + 90) % 360;
-    onUpdate({ rotation: newRotation });
+    onUpdate({ rotation: (object.rotation + 90) % 360 });
     toast.success('Object rotated');
   };
 
-  const handleDelete = () => {
+  const handleRemove = () => {
     onRemove();
     onOpenChange(false);
     toast.success('Object removed');
@@ -60,102 +55,86 @@ export const ObjectPropertiesPopover: React.FC<ObjectPropertiesPopoverProps> = (
   return (
     <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-6 w-6 p-0"
-        >
-          <Settings className="w-3 h-3" />
+        <Button variant="outline" size="sm">
+          <Settings className="w-4 h-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 bg-white border shadow-lg z-50">
+      <PopoverContent className="w-80">
         <div className="space-y-4">
           <div className="space-y-2">
-            <h4 className="font-medium text-sm">Edit Object Properties</h4>
-            <p className="text-xs text-gray-500">Modify the properties of the selected object</p>
+            <h4 className="font-medium">Object Properties</h4>
+            <p className="text-sm text-muted-foreground">
+              Edit the properties of the selected object.
+            </p>
           </div>
-
-          <div className="grid gap-3">
-            <div className="grid gap-2">
-              <Label htmlFor="object-name" className="text-xs">Name</Label>
+          
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="object-name">Name</Label>
               <Input
                 id="object-name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="h-8 text-xs"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Object name"
               />
             </div>
-
+            
             <div className="grid grid-cols-2 gap-2">
-              <div className="grid gap-2">
-                <Label htmlFor="object-x" className="text-xs">X Position</Label>
+              <div>
+                <Label htmlFor="object-x">X Position</Label>
                 <Input
                   id="object-x"
                   type="number"
-                  value={formData.x}
-                  onChange={(e) => setFormData(prev => ({ ...prev, x: e.target.value }))}
-                  className="h-8 text-xs"
+                  value={x}
+                  onChange={(e) => setX(Number(e.target.value))}
+                  min="0"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="object-y" className="text-xs">Y Position</Label>
+              <div>
+                <Label htmlFor="object-y">Y Position</Label>
                 <Input
                   id="object-y"
                   type="number"
-                  value={formData.y}
-                  onChange={(e) => setFormData(prev => ({ ...prev, y: e.target.value }))}
-                  className="h-8 text-xs"
+                  value={y}
+                  onChange={(e) => setY(Number(e.target.value))}
+                  min="0"
                 />
               </div>
             </div>
-
+            
             <div className="grid grid-cols-2 gap-2">
-              <div className="grid gap-2">
-                <Label htmlFor="object-width" className="text-xs">Width</Label>
+              <div>
+                <Label htmlFor="object-width">Width</Label>
                 <Input
                   id="object-width"
                   type="number"
-                  value={formData.width}
-                  onChange={(e) => setFormData(prev => ({ ...prev, width: e.target.value }))}
-                  className="h-8 text-xs"
+                  value={width}
+                  onChange={(e) => setWidth(Number(e.target.value))}
+                  min="10"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="object-height" className="text-xs">Height</Label>
+              <div>
+                <Label htmlFor="object-height">Height</Label>
                 <Input
                   id="object-height"
                   type="number"
-                  value={formData.height}
-                  onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-                  className="h-8 text-xs"
+                  value={height}
+                  onChange={(e) => setHeight(Number(e.target.value))}
+                  min="10"
                 />
               </div>
             </div>
           </div>
-
-          <div className="flex gap-2 pt-2">
-            <Button
-              size="sm"
-              onClick={handleSave}
-              className="flex-1 h-8 text-xs"
-            >
-              Save Changes
+          
+          <div className="flex gap-2">
+            <Button onClick={handleSave} className="flex-1">
+              Save
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleRotate}
-              className="h-8 w-8 p-0"
-            >
-              <RotateCw className="w-3 h-3" />
+            <Button variant="outline" onClick={handleRotate}>
+              <RotateCw className="w-4 h-4" />
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDelete}
-              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-            >
-              <Trash2 className="w-3 h-3" />
+            <Button variant="destructive" onClick={handleRemove}>
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>

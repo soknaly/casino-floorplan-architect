@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { DndContext } from '@dnd-kit/core';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { FloorList } from './FloorList';
 import { DesignerPanel } from './DesignerPanel';
 import { Toolbox } from './Toolbox';
@@ -70,8 +71,64 @@ export const FloorPlanDesigner = () => {
     });
   };
 
+  const getDefaultWidth = (type: GameObject['type']): number => {
+    switch (type) {
+      case 'slot-machine': return 40;
+      case 'poker-table': return 120;
+      case 'roulette': return 100;
+      case 'blackjack': return 80;
+      case 'table': return 60;
+      default: return 50;
+    }
+  };
+
+  const getDefaultHeight = (type: GameObject['type']): number => {
+    switch (type) {
+      case 'slot-machine': return 60;
+      case 'poker-table': return 80;
+      case 'roulette': return 100;
+      case 'blackjack': return 60;
+      case 'table': return 60;
+      default: return 50;
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over, delta } = event;
+
+    if (!over || !activeFloor) return;
+
+    const activeData = active.data.current;
+
+    if (activeData?.type === 'toolbox-item' && over.id === 'floor-canvas') {
+      // Adding new object from toolbox
+      const x = Math.max(0, Math.min(active.rect.current.translated?.left || 0, activeFloor.width - getDefaultWidth(activeData.objectType)));
+      const y = Math.max(0, Math.min(active.rect.current.translated?.top || 0, activeFloor.height - getDefaultHeight(activeData.objectType)));
+
+      const newObject: GameObject = {
+        id: Date.now().toString(),
+        type: activeData.objectType,
+        x,
+        y,
+        width: getDefaultWidth(activeData.objectType),
+        height: getDefaultHeight(activeData.objectType),
+        rotation: 0,
+        name: `${activeData.objectType.replace('-', ' ').toUpperCase()} ${activeFloor.objects.length + 1}`
+      };
+
+      addObjectToFloor(newObject);
+    } else if (activeData?.type === 'floor-object' && over.id === 'floor-canvas') {
+      // Moving existing object
+      const object = activeData.object;
+      const newX = Math.max(0, Math.min(object.x + delta.x, activeFloor.width - object.width));
+      const newY = Math.max(0, Math.min(object.y + delta.y, activeFloor.height - object.height));
+      
+      updateObjectInFloor(object.id, { x: newX, y: newY });
+    }
+  };
+
   return (
-    <DndContext>
+    <DndContext onDragEnd={handleDragEnd}>
       <div className="h-screen flex">
         {/* Left Panel - Floor List */}
         <div className="w-80 bg-white border-r border-gray-200 shadow-lg">
@@ -81,6 +138,7 @@ export const FloorPlanDesigner = () => {
             onFloorSelect={setActiveFloorId}
             onFloorAdd={addFloor}
             onFloorDelete={deleteFloor}
+            onFloorUpdate={updateFloor}
           />
         </div>
 

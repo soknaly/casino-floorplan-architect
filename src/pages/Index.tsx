@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { DndContext } from '@dnd-kit/core';
 import { FloorPlanDesigner } from '@/components/FloorPlanDesigner';
 
 const Index = () => {
