@@ -18,8 +18,3 @@ export interface GameObject {
   rotation: number;
   name: string;
 }
-
-export interface DragItem {
-  type: string;
-  objectType: GameObject['type'];
-}

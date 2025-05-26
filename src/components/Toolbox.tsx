@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { useDrag } from 'react-dnd';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDraggable } from '@dnd-kit/core';
+import { Card, CardContent } from '@/components/ui/card';
 import { GameObject } from '@/types/floor-plan';
 
 const gameObjects: Array<{
@@ -53,17 +53,24 @@ interface DraggableToolboxItemProps {
 }
 
 const DraggableToolboxItem: React.FC<DraggableToolboxItemProps> = ({ item }) => {
-  const [{ isDragging }, drag] = useDrag({
-    type: 'game-object',
-    item: { type: 'game-object', objectType: item.type },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `toolbox-${item.type}`,
+    data: {
+      type: 'toolbox-item',
+      objectType: item.type,
+    },
   });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : undefined;
 
   return (
     <div
-      ref={drag}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
       className={`cursor-move transition-all ${
         isDragging ? 'opacity-50 scale-95' : 'opacity-100 hover:scale-105'
       }`}
@@ -112,9 +119,8 @@ export const Toolbox: React.FC = () => {
           <h3 className="text-sm font-medium text-gray-800 mb-2">Instructions</h3>
           <ul className="text-xs text-gray-600 space-y-1">
             <li>• Drag items from here to the floor plan</li>
-            <li>• Click objects to select and edit</li>
+            <li>• Click objects to select and edit properties</li>
             <li>• Use controls to rotate or delete</li>
-            <li>• Click name to rename objects</li>
           </ul>
         </div>
       </div>

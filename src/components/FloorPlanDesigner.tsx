@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { DndContext } from '@dnd-kit/core';
 import { FloorList } from './FloorList';
 import { DesignerPanel } from './DesignerPanel';
 import { Toolbox } from './Toolbox';
@@ -71,51 +71,53 @@ export const FloorPlanDesigner = () => {
   };
 
   return (
-    <div className="h-screen flex">
-      {/* Left Panel - Floor List */}
-      <div className="w-80 bg-white border-r border-gray-200 shadow-lg">
-        <FloorList
-          floors={floors}
-          activeFloorId={activeFloorId}
-          onFloorSelect={setActiveFloorId}
-          onFloorAdd={addFloor}
-          onFloorDelete={deleteFloor}
-        />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-6">
-          <h1 className="text-2xl font-bold text-gray-800">Casino Floor Plan Designer</h1>
-          {activeFloor && (
-            <span className="ml-4 text-sm text-gray-600">
-              Current Floor: {activeFloor.name} ({activeFloor.width}×{activeFloor.height})
-            </span>
-          )}
+    <DndContext>
+      <div className="h-screen flex">
+        {/* Left Panel - Floor List */}
+        <div className="w-80 bg-white border-r border-gray-200 shadow-lg">
+          <FloorList
+            floors={floors}
+            activeFloorId={activeFloorId}
+            onFloorSelect={setActiveFloorId}
+            onFloorAdd={addFloor}
+            onFloorDelete={deleteFloor}
+          />
         </div>
 
-        {/* Designer and Toolbox */}
-        <div className="flex-1 flex">
-          {/* Designer Panel */}
-          <div className="flex-1">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <div className="h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-6">
+            <h1 className="text-2xl font-bold text-gray-800">Casino Floor Plan Designer</h1>
             {activeFloor && (
-              <DesignerPanel
-                floor={activeFloor}
-                onObjectAdd={addObjectToFloor}
-                onObjectUpdate={updateObjectInFloor}
-                onObjectRemove={removeObjectFromFloor}
-                onFloorUpdate={(updates) => updateFloor(activeFloor.id, updates)}
-              />
+              <span className="ml-4 text-sm text-gray-600">
+                Current Floor: {activeFloor.name} ({activeFloor.width}×{activeFloor.height})
+              </span>
             )}
           </div>
 
-          {/* Right Panel - Toolbox */}
-          <div className="w-64 bg-white border-l border-gray-200 shadow-lg">
-            <Toolbox />
+          {/* Designer and Toolbox */}
+          <div className="flex-1 flex">
+            {/* Designer Panel */}
+            <div className="flex-1">
+              {activeFloor && (
+                <DesignerPanel
+                  floor={activeFloor}
+                  onObjectAdd={addObjectToFloor}
+                  onObjectUpdate={updateObjectInFloor}
+                  onObjectRemove={removeObjectFromFloor}
+                  onFloorUpdate={(updates) => updateFloor(activeFloor.id, updates)}
+                />
+              )}
+            </div>
+
+            {/* Right Panel - Toolbox */}
+            <div className="w-64 bg-white border-l border-gray-200 shadow-lg">
+              <Toolbox />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </DndContext>
   );
 };
