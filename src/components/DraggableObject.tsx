@@ -28,10 +28,6 @@ export const DraggableObject: React.FC<DraggableObjectProps> = ({
     },
   });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
-
   const getObjectColor = (type: GameObject['type']): string => {
     switch (type) {
       case 'slot-machine': return 'bg-red-500';
@@ -54,22 +50,22 @@ export const DraggableObject: React.FC<DraggableObjectProps> = ({
     }
   };
 
+  // Calculate the actual position including transform
+  const actualStyle = {
+    left: object.x,
+    top: object.y,
+    width: object.width,
+    height: object.height,
+    transform: `rotate(${object.rotation}deg) ${transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : ''}`,
+    transformOrigin: 'center',
+  };
+
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        left: object.x,
-        top: object.y,
-        width: object.width,
-        height: object.height,
-        transform: `rotate(${object.rotation}deg)`,
-        transformOrigin: 'center',
-      }}
-      {...listeners}
-      {...attributes}
+      style={actualStyle}
       className={`absolute cursor-move select-none transition-all ${
-        isDragging ? 'opacity-50 scale-110 z-10' : 'opacity-100'
+        isDragging ? 'opacity-75 scale-105 z-50' : 'opacity-100'
       } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
@@ -78,30 +74,32 @@ export const DraggableObject: React.FC<DraggableObjectProps> = ({
     >
       {/* Object body */}
       <div
+        {...listeners}
+        {...attributes}
         className={`w-full h-full rounded-lg shadow-lg border-2 border-white ${getObjectColor(
           object.type
-        )} flex items-center justify-center text-white font-bold relative overflow-hidden`}
+        )} flex items-center justify-center text-white font-bold relative overflow-hidden hover:shadow-xl transition-shadow`}
       >
-        <div className="text-center">
+        <div className="text-center pointer-events-none">
           <div className="text-lg">{getObjectIcon(object.type)}</div>
           <div className="text-xs mt-1 truncate px-1">
             {object.name}
           </div>
         </div>
-
-        {/* Selection controls */}
-        {isSelected && (
-          <div className="absolute -top-10 left-0 flex gap-1 bg-white rounded shadow-lg p-1">
-            <ObjectPropertiesPopover
-              object={object}
-              onUpdate={onUpdate}
-              onRemove={onRemove}
-              isOpen={isPropertiesOpen}
-              onOpenChange={setIsPropertiesOpen}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Selection controls */}
+      {isSelected && !isDragging && (
+        <div className="absolute -top-10 left-0 flex gap-1 bg-white rounded shadow-lg p-1 z-10">
+          <ObjectPropertiesPopover
+            object={object}
+            onUpdate={onUpdate}
+            onRemove={onRemove}
+            isOpen={isPropertiesOpen}
+            onOpenChange={setIsPropertiesOpen}
+          />
+        </div>
+      )}
     </div>
   );
 };

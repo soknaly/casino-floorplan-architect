@@ -57,6 +57,17 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
     toast.success('Floor plan exported successfully!');
   };
 
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    // Only deselect if clicking on the canvas itself, not on objects
+    if (e.target === e.currentTarget) {
+      // This will deselect any selected objects
+      const selectedObjects = document.querySelectorAll('[data-selected="true"]');
+      selectedObjects.forEach(obj => {
+        (obj as HTMLElement).click();
+      });
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-gray-100">
       {/* Toolbar */}
@@ -109,6 +120,7 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat'
             }}
+            onClick={handleCanvasClick}
           >
             {/* Game objects */}
             {floor.objects.map((object) => (
@@ -121,7 +133,7 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
               />
             ))}
 
-            {/* Drop zone indicator */}
+            {/* Drop zone indicator - only show when dragging from toolbox */}
             {isOver && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay } from '@dnd-kit/core';
 import { FloorList } from './FloorList';
 import { DesignerPanel } from './DesignerPanel';
 import { Toolbox } from './Toolbox';
@@ -18,6 +18,7 @@ export const FloorPlanDesigner = () => {
     }
   ]);
   const [activeFloorId, setActiveFloorId] = useState<string>('1');
+  const [activeId, setActiveId] = useState<string | null>(null);
   
   const activeFloor = floors.find(floor => floor.id === activeFloorId);
 
@@ -93,8 +94,13 @@ export const FloorPlanDesigner = () => {
     }
   };
 
+  const handleDragStart = (event: any) => {
+    setActiveId(event.active.id);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over, delta } = event;
+    setActiveId(null);
 
     if (!over || !activeFloor) return;
 
@@ -102,8 +108,9 @@ export const FloorPlanDesigner = () => {
 
     if (activeData?.type === 'toolbox-item' && over.id === 'floor-canvas') {
       // Adding new object from toolbox
-      const x = Math.max(0, Math.min(active.rect.current.translated?.left || 0, activeFloor.width - getDefaultWidth(activeData.objectType)));
-      const y = Math.max(0, Math.min(active.rect.current.translated?.top || 0, activeFloor.height - getDefaultHeight(activeData.objectType)));
+      const rect = active.rect.current?.translated;
+      const x = Math.max(0, Math.min(rect?.left || 0, activeFloor.width - getDefaultWidth(activeData.objectType)));
+      const y = Math.max(0, Math.min(rect?.top || 0, activeFloor.height - getDefaultHeight(activeData.objectType)));
 
       const newObject: GameObject = {
         id: Date.now().toString(),
@@ -128,7 +135,7 @@ export const FloorPlanDesigner = () => {
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="h-screen flex">
         {/* Left Panel - Floor List */}
         <div className="w-80 bg-white border-r border-gray-200 shadow-lg">
@@ -176,6 +183,14 @@ export const FloorPlanDesigner = () => {
           </div>
         </div>
       </div>
+
+      <DragOverlay>
+        {activeId ? (
+          <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg opacity-75">
+            Dragging...
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 };
