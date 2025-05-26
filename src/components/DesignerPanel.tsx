@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Floor, GameObject } from '@/types/floor-plan';
@@ -13,6 +12,7 @@ interface DesignerPanelProps {
   onObjectUpdate: (objectId: string, updates: Partial<GameObject>) => void;
   onObjectRemove: (objectId: string) => void;
   onFloorUpdate: (updates: Partial<Floor>) => void;
+  draggedItem?: any;
 }
 
 export const DesignerPanel: React.FC<DesignerPanelProps> = ({
@@ -20,7 +20,8 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
   onObjectAdd,
   onObjectUpdate,
   onObjectRemove,
-  onFloorUpdate
+  onFloorUpdate,
+  draggedItem
 }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +69,8 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
     }
   };
 
+  const shouldShowDropIndicator = isOver && draggedItem?.type === 'toolbox-item';
+
   return (
     <div className="h-full flex flex-col bg-gray-100">
       {/* Toolbar */}
@@ -110,7 +113,7 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
               setNodeRef(node);
             }}
             className={`relative border-2 border-dashed shadow-lg transition-colors ${
-              isOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'
+              shouldShowDropIndicator ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'
             }`}
             style={{
               width: floor.width,
@@ -134,7 +137,7 @@ export const DesignerPanel: React.FC<DesignerPanelProps> = ({
             ))}
 
             {/* Drop zone indicator - only show when dragging from toolbox */}
-            {isOver && (
+            {shouldShowDropIndicator && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
                   Drop here to add object

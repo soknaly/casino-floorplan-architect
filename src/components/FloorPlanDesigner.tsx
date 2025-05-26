@@ -19,6 +19,7 @@ export const FloorPlanDesigner = () => {
   ]);
   const [activeFloorId, setActiveFloorId] = useState<string>('1');
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [draggedItem, setDraggedItem] = useState<any>(null);
   
   const activeFloor = floors.find(floor => floor.id === activeFloorId);
 
@@ -96,11 +97,13 @@ export const FloorPlanDesigner = () => {
 
   const handleDragStart = (event: any) => {
     setActiveId(event.active.id);
+    setDraggedItem(event.active.data.current);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over, delta } = event;
     setActiveId(null);
+    setDraggedItem(null);
 
     if (!over || !activeFloor) return;
 
@@ -132,6 +135,30 @@ export const FloorPlanDesigner = () => {
       
       updateObjectInFloor(object.id, { x: newX, y: newY });
     }
+  };
+
+  const renderDragOverlay = () => {
+    if (!draggedItem) return null;
+
+    if (draggedItem.type === 'toolbox-item') {
+      return (
+        <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg opacity-75">
+          Adding {draggedItem.objectType.replace('-', ' ')}...
+        </div>
+      );
+    } else if (draggedItem.type === 'floor-object') {
+      const object = draggedItem.object;
+      return (
+        <div 
+          className="bg-gray-800 text-white px-2 py-1 rounded shadow-lg opacity-75 text-sm"
+          style={{ width: object.width, height: object.height }}
+        >
+          Moving {object.name}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -172,6 +199,7 @@ export const FloorPlanDesigner = () => {
                   onObjectUpdate={updateObjectInFloor}
                   onObjectRemove={removeObjectFromFloor}
                   onFloorUpdate={(updates) => updateFloor(activeFloor.id, updates)}
+                  draggedItem={draggedItem}
                 />
               )}
             </div>
@@ -185,11 +213,7 @@ export const FloorPlanDesigner = () => {
       </div>
 
       <DragOverlay>
-        {activeId ? (
-          <div className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg opacity-75">
-            Dragging...
-          </div>
-        ) : null}
+        {renderDragOverlay()}
       </DragOverlay>
     </DndContext>
   );

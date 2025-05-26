@@ -60,27 +60,44 @@ export const DraggableObject: React.FC<DraggableObjectProps> = ({
     transformOrigin: 'center',
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!isDragging) {
+      setIsSelected(!isSelected);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={actualStyle}
-      className={`absolute cursor-move select-none transition-all ${
+      className={`absolute select-none transition-all ${
         isDragging ? 'opacity-75 scale-105 z-50' : 'opacity-100'
       } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
-      onClick={(e) => {
+      onMouseDown={(e) => {
+        // Allow both dragging and clicking
         e.stopPropagation();
-        setIsSelected(!isSelected);
       }}
     >
       {/* Object body */}
       <div
-        {...listeners}
-        {...attributes}
         className={`w-full h-full rounded-lg shadow-lg border-2 border-white ${getObjectColor(
           object.type
-        )} flex items-center justify-center text-white font-bold relative overflow-hidden hover:shadow-xl transition-shadow`}
+        )} flex items-center justify-center text-white font-bold relative overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
+        onClick={handleClick}
       >
-        <div className="text-center pointer-events-none">
+        {/* Drag handle - separate from click area */}
+        <div
+          {...listeners}
+          {...attributes}
+          className="absolute inset-0 cursor-move"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
+        />
+        
+        <div className="text-center pointer-events-none relative z-10">
           <div className="text-lg">{getObjectIcon(object.type)}</div>
           <div className="text-xs mt-1 truncate px-1">
             {object.name}
@@ -90,7 +107,7 @@ export const DraggableObject: React.FC<DraggableObjectProps> = ({
 
       {/* Selection controls */}
       {isSelected && !isDragging && (
-        <div className="absolute -top-10 left-0 flex gap-1 bg-white rounded shadow-lg p-1 z-10">
+        <div className="absolute -top-10 left-0 flex gap-1 bg-white rounded shadow-lg p-1 z-20">
           <ObjectPropertiesPopover
             object={object}
             onUpdate={onUpdate}
